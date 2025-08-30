@@ -39,11 +39,8 @@ jobs:
       # Run Snyk Security scan on dependencies
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master
-        with:
-          args: test --all-projects --json
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        working-directory: ./
 
       # Generate commit SHA for Docker image tag
       - name: Generate Commit SHA for Image Tag
