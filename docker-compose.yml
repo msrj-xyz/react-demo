@@ -1,5 +1,5 @@
 services:
-  react-app:
+  demo-react:
     build: .
     container_name: demo-react
     ports:
