@@ -43,10 +43,11 @@ jobs:
             image: ${{ github.repository }}:${{ github.sha }} 
 
 
-      # Build Docker image with commit SHA as tag
+      # Build Docker image with timestamp as tag
       - name: Build Docker image
         run: |
-          docker build -t ${{ github.repository }}:${{ github.sha }} .
+          IMAGE_TAG=$(date +'%Y%m%d%H%M%S')  # Generate timestamp as tag
+          docker build -t ${{ github.repository }}:$IMAGE_TAG .
           
       # Push Docker image to Docker Hub or GitHub Container Registry
       - name: Log in to Docker Hub
