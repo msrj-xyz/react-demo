@@ -43,10 +43,9 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
-        run: |
-          snyk test --all-projects --json > snyk_scan_results.json
-          echo "Snyk scan completed"  # You can check the logs or save it as a file
-
+        with:
+          args: test --all-projects --json
+          
       # Generate commit SHA for Docker image tag
       - name: Generate Commit SHA for Image Tag
         id: set_image_tag
@@ -73,10 +72,7 @@ jobs:
             ignore-unfixed: true
             vuln-type: 'os,library'
             severity: 'CRITICAL,HIGH'
-        run: |
-          trivy --format json --output trivy_scan_results.json fclone29/react-demo:${{ env.IMAGE_TAG }}
-          echo "Trivy scan completed"
-
+          
       # Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -125,7 +121,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat snyk_scan_results.json)"  
+                  text: "$(cat snyk_scan_results.json)"  # Attach Snyk scan result to Slack message
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -133,7 +129,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat trivy_scan_results.json)" 
+                  text: "$(cat trivy_scan_results.json)"  # Attach Trivy scan result to Slack message
 
       # Notify via Slack on Failure (with Blocks)
       - name: Notify via Slack on Failure
@@ -170,7 +166,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat snyk_scan_results.json)"  
+                  text: "$(cat snyk_scan_results.json)"  # Attach Snyk scan result to Slack message
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -178,4 +174,4 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat trivy_scan_results.json)"  
+                  text: "$(cat trivy_scan_results.json)"  # Attach Trivy scan result to Slack message
