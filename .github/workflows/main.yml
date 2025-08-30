@@ -38,7 +38,7 @@ jobs:
 
       # Security check: Run Trivy scan on base image (Docker vulnerability scan)
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@v0.33.0
+        uses: aquasecurity/trivy-action@0.28.0
 
       # Build Docker image with commit SHA as tag
       - name: Build Docker image
@@ -58,7 +58,7 @@ jobs:
 
       # Snyk Security scan (Scan for known vulnerabilities in dependencies)
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/docker@v3 
+        uses: snyk/actions/node@master
         with:
           image: ${{ github.repository }}:${{ github.sha }}
         env:
