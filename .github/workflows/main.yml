@@ -73,7 +73,6 @@ jobs:
         uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK }}
-          channel: "#alert-and-notification" 
           webhook-type: incoming-webhook
           payload: |
             text: "Deployment successful for commit ${{ github.sha }}"
@@ -103,7 +102,6 @@ jobs:
         uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK }}
-          channel: "#alert-and-notification"
           webhook-type: incoming-webhook
           payload: |
             text: "Deployment failed for commit ${{ github.sha }}"
