@@ -23,7 +23,7 @@ jobs:
 
       # Set up Docker cache 
       - name: Cache Docker layers
-        uses: actions/cache@v2  # Using v2 instead of v3 for upload-artifact
+        uses: actions/cache@v3  # Updated to v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -64,7 +64,7 @@ jobs:
       # Run Trivy Security scan on Docker image (updated version)
       - name: Scan Docker image with Trivy for vulnerabilities
         id: trivy_scan
-        uses: aquasecurity/trivy-action@v0.21.0  # Updated to a stable version
+        uses: aquasecurity/trivy-action@v0.0.22  # Updated to the latest stable version
         with:
             image-ref: fclone29/react-demo:${{ env.IMAGE_TAG }}
             format: 'json'  # Output format for easy parsing
@@ -75,7 +75,7 @@ jobs:
 
       # Upload Snyk and Trivy results as artifacts
       - name: Upload Snyk and Trivy scan results
-        uses: actions/upload-artifact@v2  # Using v2 instead of v3
+        uses: actions/upload-artifact@v3  # Updated to v3
         with:
           name: scan-results
           path: |
