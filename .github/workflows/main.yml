@@ -43,7 +43,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: test --all-projects --json
+          args: test --all-projects --json > snyk_scan_results.json
         continue-on-error: true
 
       # Generate commit SHA for Docker image tag
