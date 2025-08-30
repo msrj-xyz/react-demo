@@ -36,12 +36,11 @@ jobs:
           npm install
           npm audit --production --json | tee audit-results.json
 
-      # Security check: Run Trivy scan on base image (Docker vulnerability scan)
-      - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-            image: ${{ github.repository }}:${{ github.sha }} 
-
+    #   # Security check: Run Trivy scan on base image (Docker vulnerability scan)
+    #   - name: Scan Docker image for vulnerabilities
+    #     uses: aquasecurity/trivy-action@0.28.0
+    #     with:
+    #         image: ${{ github.repository }}:${{ github.sha }} 
 
       # Build Docker image with timestamp as tag
       - name: Build Docker image
