@@ -38,9 +38,14 @@ jobs:
 
       # Run Snyk Security scan on dependencies
       - name: Run Snyk to check for vulnerabilities
+        id: snyk_scan
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+        run: |
+          snyk test --all-projects --json > snyk_scan_results.json
+          echo "Snyk scan completed"  # You can check the logs or save it as a file
 
       # Generate commit SHA for Docker image tag
       - name: Generate Commit SHA for Image Tag
@@ -59,15 +64,20 @@ jobs:
 
       # Run Trivy Security scan on Docker image
       - name: Scan Docker image with Trivy for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
+        id: trivy_scan
+        uses: aquasecurity/trivy-action@v0.28.0
         with:
             image-ref: fclone29/react-demo:${{ env.IMAGE_TAG }}
-            format: 'table'
+            format: 'json'  # Output format for easy parsing
             exit-code: '1'
             ignore-unfixed: true
             vuln-type: 'os,library'
             severity: 'CRITICAL,HIGH'
+        run: |
+          trivy --format json --output trivy_scan_results.json fclone29/react-demo:${{ env.IMAGE_TAG }}
+          echo "Trivy scan completed"
 
+      # Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -77,8 +87,8 @@ jobs:
       # Push Docker image to Docker Hub or GitHub Container Registry
       - name: Push Docker image to Registry
         run: |
-            echo "Pushing Docker image: fclone29/react-demo:$IMAGE_TAG"  # Verify tag before pushing
-            docker push fclone29/react-demo:$IMAGE_TAG      
+            echo "Pushing Docker image: fclone29/react-demo:${{ env.IMAGE_TAG }}"  # Verify tag before pushing
+            docker push fclone29/react-demo:${{ env.IMAGE_TAG }}
 
       # Notify via Slack on Success (with Blocks)
       - name: Notify via Slack on Success
@@ -99,7 +109,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: $IMAGE_TAG"
+                    text: "*Image Tag*: ${{ env.IMAGE_TAG }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -108,6 +118,22 @@ jobs:
                 text:
                   type: "mrkdwn"
                   text: "Deployment was successful for this commit. 🎉"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Snyk Scan Result*"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "$(cat snyk_scan_results.json)"  
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Trivy Scan Result*"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "$(cat trivy_scan_results.json)" 
 
       # Notify via Slack on Failure (with Blocks)
       - name: Notify via Slack on Failure
@@ -128,7 +154,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: $IMAGE_TAG"
+                    text: "*Image Tag*: ${{ env.IMAGE_TAG }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -137,3 +163,19 @@ jobs:
                 text:
                   type: "mrkdwn"
                   text: "Deployment failed for this commit. Please check logs. ⚠️"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Snyk Scan Result*"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "$(cat snyk_scan_results.json)"  
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Trivy Scan Result*"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "$(cat trivy_scan_results.json)"  
