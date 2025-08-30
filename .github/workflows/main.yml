@@ -1,0 +1,90 @@
+name: GitHub Actions for Frontend
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout source code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Set up Docker
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Set up Docker cache 
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # Install dependencies and run tests (security analysis)
+      - name: Install Dependencies and run tests
+        run: |
+          npm install
+          npm audit --production --json | tee audit-results.json
+
+      # Security check: Run Trivy scan on base image (Docker vulnerability scan)
+      - name: Scan Docker image for vulnerabilities
+        uses: aquasecurity/trivy-action@v0.0.7
+        with:
+          image: ${{ github.repository }}:${{ github.sha }}
+          
+      # Build Docker image with commit SHA as tag
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ github.repository }}:${{ github.sha }} .
+          
+      # Push Docker image to Docker Hub or GitHub Container Registry
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Push Docker image to Registry
+        run: |
+          docker push ${{ github.repository }}:${{ github.sha }}
+
+      # Snyk Security scan (Scan for known vulnerabilities in dependencies)
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/docker@v1
+        with:
+          image: ${{ github.repository }}:${{ github.sha }}
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Dependency update check (Dependabot)
+      - name: Check for dependency updates
+        uses: dependabot/fetch-metadata-action@v1
+
+      # Notify via Slack on Success
+      - name: Notify via Slack on Success
+        if: success()
+        uses: Ilshidur/action-slack@v2
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: "#alert-and-notification"  
+          message: "Deployment successful for commit ${{ github.sha }}"
+
+      # Notify via Slack on Failure
+      - name: Notify via Slack on Failure
+        if: failure()
+        uses: Ilshidur/action-slack@v2
+        with:
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          channel: "#alert-and-notification"  
+          message: "Deployment failed for commit ${{ github.sha }}"
+
