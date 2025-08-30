@@ -63,7 +63,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-        # Push Docker image to Docker Hub or GitHub Container Registry
+      # Run Trivy Security scan on Docker image
+      - name: Scan Docker image with Trivy for vulnerabilities
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+            image-ref: fclone29/react-demo:$IMAGE_TAG
+            format: 'table'
+            exit-code: '1'
+            ignore-unfixed: true
+            vuln-type: 'os,library'
+            severity: 'CRITICAL,HIGH'
+
+      # Push Docker image to Docker Hub or GitHub Container Registry
       - name: Push Docker image to Registry
         run: |
             echo "Pushing Docker image: fclone29/react-demo:$IMAGE_TAG"  # Verify tag before pushing
