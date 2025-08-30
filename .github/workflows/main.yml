@@ -42,9 +42,9 @@ jobs:
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: test --all-projects --json
-        continue-on-error: true
+        # with:
+        #   args: test --all-projects --json
+        continue-on-error: false
 
       # Generate commit SHA for Docker image tag
       - name: Generate Commit SHA for Image Tag
