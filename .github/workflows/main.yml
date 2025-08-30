@@ -67,20 +67,62 @@ jobs:
     #     env:
     #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-    #   # Notify via Slack on Success
-    #   - name: Notify via Slack on Success
-    #     if: success()
-    #     uses: Ilshidur/action-slack@2.1.0  
-    #     with:
-    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-    #       channel: "#alert-and-notification"  
-    #       message: "Deployment successful for commit ${{ github.sha }}"
+      # Notify via Slack on Success (with Blocks)
+      - name: Notify via Slack on Success
+        if: success()
+        uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          channel: "#alert-and-notification" 
+          webhook-type: incoming-webhook
+          payload: |
+            text: "Deployment successful for commit ${{ github.sha }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Deployment Successful*"
+              - type: "section"
+                fields:
+                  - type: "mrkdwn"
+                    text: "*Commit SHA*: ${{ github.sha }}"
+                  - type: "mrkdwn"
+                    text: "*Image Tag*: $IMAGE_TAG"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|View Commit>"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "Deployment was successful for this commit. 🎉"
 
-    #   # Notify via Slack on Failure
-    #   - name: Notify via Slack on Failure
-    #     if: failure()
-    #     uses: Ilshidur/action-slack@2.1.0  
-    #     with:
-    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-    #       channel: "#alert-and-notification"  
-    #       message: "Deployment failed for commit ${{ github.sha }}"
+      # Notify via Slack on Failure (with Blocks)
+      - name: Notify via Slack on Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}
+          channel: "#alert-and-notification"
+          webhook-type: incoming-webhook
+          payload: |
+            text: "Deployment failed for commit ${{ github.sha }}"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "*Deployment Failed*"
+              - type: "section"
+                fields:
+                  - type: "mrkdwn"
+                    text: "*Commit SHA*: ${{ github.sha }}"
+                  - type: "mrkdwn"
+                    text: "*Image Tag*: $IMAGE_TAG"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|View Commit>"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "Deployment failed for this commit. Please check logs. ⚠️"
