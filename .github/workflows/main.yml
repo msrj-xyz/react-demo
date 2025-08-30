@@ -64,7 +64,7 @@ jobs:
       # Run Trivy Security scan on Docker image (updated version)
       - name: Scan Docker image with Trivy for vulnerabilities
         id: trivy_scan
-        uses: aquasecurity/trivy-action@v0.0.22  # Updated to the latest stable version
+        uses: aquasecurity/trivy-action@0.28.0
         with:
             image-ref: fclone29/react-demo:${{ env.IMAGE_TAG }}
             format: 'json'  # Output format for easy parsing
@@ -82,7 +82,7 @@ jobs:
 
       # Upload Snyk and Trivy results as artifacts
       - name: Upload Snyk and Trivy scan results
-        uses: actions/upload-artifact@v3  # Updated to v3
+        uses: actions/upload-artifact@v4
         with:
           name: scan-results
           path: |
