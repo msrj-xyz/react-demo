@@ -75,7 +75,7 @@ jobs:
 
       # Upload Snyk and Trivy results as artifacts
       - name: Upload Snyk and Trivy scan results
-        uses: actions/upload-artifact@v3  # Updated to v3
+        uses: actions/upload-artifact@v4  
         with:
           name: scan-results
           path: |
