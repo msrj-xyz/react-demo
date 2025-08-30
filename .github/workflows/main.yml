@@ -65,10 +65,13 @@ jobs:
             
             if [ $CRITICAL -gt 0 ] || [ $HIGH -gt 0 ]; then
               echo "SNYK_STATUS=❌ Found Critical/High vulnerabilities" >> $GITHUB_ENV
+              echo "SNYK_FAILED=true" >> $GITHUB_ENV
             elif [ $MEDIUM -gt 0 ] || [ $LOW -gt 0 ]; then
               echo "SNYK_STATUS=⚠️ Found Medium/Low vulnerabilities" >> $GITHUB_ENV
+              echo "SNYK_FAILED=false" >> $GITHUB_ENV
             else
               echo "SNYK_STATUS=✅ No vulnerabilities found" >> $GITHUB_ENV
+              echo "SNYK_FAILED=false" >> $GITHUB_ENV
             fi
           else
             echo "SNYK_STATUS=❓ Scan results not available" >> $GITHUB_ENV
@@ -77,6 +80,19 @@ jobs:
             echo "SNYK_HIGH=0" >> $GITHUB_ENV
             echo "SNYK_MEDIUM=0" >> $GITHUB_ENV
             echo "SNYK_LOW=0" >> $GITHUB_ENV
+            echo "SNYK_FAILED=false" >> $GITHUB_ENV
+          fi
+
+      # Check Snyk results and fail if Critical/High vulnerabilities found
+      - name: Check Snyk Security Gate
+        run: |
+          if [ "${{ env.SNYK_FAILED }}" == "true" ]; then
+            echo "🚨 SECURITY GATE FAILED: Snyk found Critical/High vulnerabilities!"
+            echo "Critical: ${{ env.SNYK_CRITICAL }}, High: ${{ env.SNYK_HIGH }}"
+            echo "Pipeline stopped due to security vulnerabilities."
+            exit 1
+          else
+            echo "✅ Snyk Security Gate PASSED"
           fi
 
       # Generate commit SHA for Docker image tag
@@ -126,10 +142,13 @@ jobs:
             
             if [ $CRITICAL -gt 0 ] || [ $HIGH -gt 0 ]; then
               echo "TRIVY_STATUS=❌ Found Critical/High vulnerabilities" >> $GITHUB_ENV
+              echo "TRIVY_FAILED=true" >> $GITHUB_ENV
             elif [ $MEDIUM -gt 0 ] || [ $LOW -gt 0 ]; then
               echo "TRIVY_STATUS=⚠️ Found Medium/Low vulnerabilities" >> $GITHUB_ENV
+              echo "TRIVY_FAILED=false" >> $GITHUB_ENV
             else
               echo "TRIVY_STATUS=✅ No vulnerabilities found" >> $GITHUB_ENV
+              echo "TRIVY_FAILED=false" >> $GITHUB_ENV
             fi
           else
             echo "TRIVY_STATUS=❓ Scan results not available" >> $GITHUB_ENV
@@ -138,17 +157,54 @@ jobs:
             echo "TRIVY_HIGH=0" >> $GITHUB_ENV
             echo "TRIVY_MEDIUM=0" >> $GITHUB_ENV
             echo "TRIVY_LOW=0" >> $GITHUB_ENV
+            echo "TRIVY_FAILED=false" >> $GITHUB_ENV
           fi
 
-      # Log in to Docker Hub
+      # Check Trivy results and fail if Critical/High vulnerabilities found
+      - name: Check Trivy Security Gate
+        run: |
+          if [ "${{ env.TRIVY_FAILED }}" == "true" ]; then
+            echo "🚨 SECURITY GATE FAILED: Trivy found Critical/High vulnerabilities!"
+            echo "Critical: ${{ env.TRIVY_CRITICAL }}, High: ${{ env.TRIVY_HIGH }}"
+            echo "Pipeline stopped due to security vulnerabilities."
+            exit 1
+          else
+            echo "✅ Trivy Security Gate PASSED"
+          fi
+
+      # Combined Security Gate Check
+      - name: Final Security Gate Check
+        run: |
+          TOTAL_CRITICAL=$((${SNYK_CRITICAL:-0} + ${TRIVY_CRITICAL:-0}))
+          TOTAL_HIGH=$((${SNYK_HIGH:-0} + ${TRIVY_HIGH:-0}))
+          
+          echo "=== SECURITY GATE SUMMARY ==="
+          echo "Total Critical Vulnerabilities: $TOTAL_CRITICAL"
+          echo "Total High Vulnerabilities: $TOTAL_HIGH"
+          echo "Snyk Status: ${{ env.SNYK_STATUS }}"
+          echo "Trivy Status: ${{ env.TRIVY_STATUS }}"
+          
+          if [ $TOTAL_CRITICAL -gt 0 ] || [ $TOTAL_HIGH -gt 0 ]; then
+            echo ""
+            echo "🚨 DEPLOYMENT BLOCKED: Critical/High vulnerabilities found!"
+            echo "🛑 Fix these security issues before proceeding with deployment."
+            exit 1
+          else
+            echo ""
+            echo "✅ SECURITY GATE PASSED: Safe to proceed with deployment"
+          fi
+
+      # Log in to Docker Hub (only if security gates pass)
       - name: Log in to Docker Hub
+        if: success()
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Push Docker image to Docker Hub or GitHub Container Registry
+      # Push Docker image to Docker Hub or GitHub Container Registry (only if security gates pass)
       - name: Push Docker image to Registry
+        if: success()
         run: |
             echo "Pushing Docker image: fclone29/react-demo:${{ env.IMAGE_TAG }}"  # Verify tag before pushing
             docker push fclone29/react-demo:${{ env.IMAGE_TAG }}
@@ -242,7 +298,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "*🚨 SECURITY ALERT*"
+                  text: "*🚨 SECURITY ALERT - DEPLOYMENT BLOCKED*"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -260,4 +316,4 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "⚠️ *Action Required:* Please review and address these security vulnerabilities immediately."
+                  text: "🛑 *DEPLOYMENT STOPPED:* Pipeline has been blocked due to security vulnerabilities. Please fix these issues before proceeding."
