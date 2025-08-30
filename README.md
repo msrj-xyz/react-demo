@@ -20,3 +20,4 @@ The app only displays text and a counter button, but it is fully prepared for **
    ```bash
    git clone https://github.com/yourusername/react-demo.git
    cd react-demo
+   docker compose up -d --build
