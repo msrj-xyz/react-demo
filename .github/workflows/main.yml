@@ -36,18 +36,12 @@ jobs:
           npm install
           npm audit --production --json | tee audit-results.json
 
-    #   # Security check: Run Trivy scan on base image (Docker vulnerability scan)
-    #   - name: Scan Docker image for vulnerabilities
-    #     uses: aquasecurity/trivy-action@0.28.0
-    #     with:
-    #         image: ${{ github.repository }}:${{ github.sha }} 
-
-      # Build Docker image with timestamp as tag
+      # Build Docker image with commit SHA as tag
       - name: Build Docker image
         run: |
-          IMAGE_TAG=$(date +'%Y%m%d%H%M%S')
-          docker build -t fclone29/react-demo .
-          
+          IMAGE_TAG=${{ github.sha }} 
+          docker build -t fclone29/react-demo:$IMAGE_TAG .
+
       # Push Docker image to Docker Hub or GitHub Container Registry
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -57,20 +51,21 @@ jobs:
       
       - name: Push Docker image to Registry
         run: |
-          docker push fclone29/react-demo
+          docker push fclone29/react-demo:$IMAGE_TAG
 
-    #   # Snyk Security scan (Scan for known vulnerabilities in dependencies)
-    #   - name: Run Snyk to check for vulnerabilities
-    #     uses: snyk/actions/node@master
-    #     with:
-    #       image: fclone29/react-demo:$IMAGE_TAG
-    #     env:
-    #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      # Snyk Security scan (Scan for known vulnerabilities in dependencies)
+      # Uncomment and use this step if necessary
+      # - name: Run Snyk to check for vulnerabilities
+      #   uses: snyk/actions/node@master
+      #   with:
+      #     image: fclone29/react-demo:$IMAGE_TAG
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       # Notify via Slack on Success (with Blocks)
       - name: Notify via Slack on Success
         if: success()
-        uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
+        uses: slackapi/slack-github-action@v2.1.1 
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
@@ -86,7 +81,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: $IMAGE_TAG"
+                    text: "*Image Tag*: ${{ github.sha }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -99,7 +94,7 @@ jobs:
       # Notify via Slack on Failure (with Blocks)
       - name: Notify via Slack on Failure
         if: failure()
-        uses: slackapi/slack-github-action@v2.1.1  # Update to use Slack's official action
+        uses: slackapi/slack-github-action@v2.1.1  
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK }}
           webhook-type: incoming-webhook
@@ -115,7 +110,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: $IMAGE_TAG"
+                    text: "*Image Tag*: ${{ github.sha }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
