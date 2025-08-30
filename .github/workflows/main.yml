@@ -38,7 +38,7 @@ jobs:
 
       # Run Snyk Security scan on dependencies
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@v1
+        uses: snyk/actions/node@master
         with:
           args: test --all-projects --json
         env:
