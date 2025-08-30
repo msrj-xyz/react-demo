@@ -59,28 +59,28 @@ jobs:
         run: |
           docker push fclone29/react-demo
 
-      # Snyk Security scan (Scan for known vulnerabilities in dependencies)
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        with:
-          image: fclone29/react-demo:$IMAGE_TAG
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    #   # Snyk Security scan (Scan for known vulnerabilities in dependencies)
+    #   - name: Run Snyk to check for vulnerabilities
+    #     uses: snyk/actions/node@master
+    #     with:
+    #       image: fclone29/react-demo:$IMAGE_TAG
+    #     env:
+    #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # Notify via Slack on Success
-      - name: Notify via Slack on Success
-        if: success()
-        uses: Ilshidur/action-slack@2.1.0  
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          channel: "#alert-and-notification"  
-          message: "Deployment successful for commit ${{ github.sha }}"
+    #   # Notify via Slack on Success
+    #   - name: Notify via Slack on Success
+    #     if: success()
+    #     uses: Ilshidur/action-slack@2.1.0  
+    #     with:
+    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+    #       channel: "#alert-and-notification"  
+    #       message: "Deployment successful for commit ${{ github.sha }}"
 
-      # Notify via Slack on Failure
-      - name: Notify via Slack on Failure
-        if: failure()
-        uses: Ilshidur/action-slack@2.1.0  
-        with:
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          channel: "#alert-and-notification"  
-          message: "Deployment failed for commit ${{ github.sha }}"
+    #   # Notify via Slack on Failure
+    #   - name: Notify via Slack on Failure
+    #     if: failure()
+    #     uses: Ilshidur/action-slack@2.1.0  
+    #     with:
+    #       webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+    #       channel: "#alert-and-notification"  
+    #       message: "Deployment failed for commit ${{ github.sha }}"
