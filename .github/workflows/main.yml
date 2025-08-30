@@ -23,7 +23,7 @@ jobs:
 
       # Set up Docker cache 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v3  # Updated to v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -64,7 +64,7 @@ jobs:
       # Run Trivy Security scan on Docker image (updated version)
       - name: Scan Docker image with Trivy for vulnerabilities
         id: trivy_scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.28.0 
         with:
             image-ref: fclone29/react-demo:${{ env.IMAGE_TAG }}
             format: 'json'  # Output format for easy parsing
@@ -73,16 +73,9 @@ jobs:
             vuln-type: 'os,library'
             severity: 'CRITICAL,HIGH'
 
-      # Save Snyk and Trivy results to files
-      - name: Save Snyk scan results to file
-        run: echo "${{ steps.snyk_scan.outputs.snyk_report }}" > snyk_scan_results.json
-
-      - name: Save Trivy scan results to file
-        run: echo "${{ steps.trivy_scan.outputs.scan_report }}" > trivy_scan_results.json
-
       # Upload Snyk and Trivy results as artifacts
       - name: Upload Snyk and Trivy scan results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4  
         with:
           name: scan-results
           path: |
@@ -137,7 +130,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifact-snyk_scan_results.json|View Snyk Scan Results>"
+                  text: "$(cat snyk_scan_results.json)"  # Attach Snyk scan result to Slack message
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -145,7 +138,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifact-trivy_scan_results.json|View Trivy Scan Results>"
+                  text: "$(cat trivy_scan_results.json)"  # Attach Trivy scan result to Slack message
 
       # Notify via Slack on Failure (with Blocks)
       - name: Notify via Slack on Failure
@@ -182,7 +175,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifact-snyk_scan_results.json|View Snyk Scan Results>"
+                  text: "$(cat snyk_scan_results.json)"  # Attach Snyk scan result to Slack message
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -190,4 +183,4 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifact-trivy_scan_results.json|View Trivy Scan Results>"
+                  text: "$(cat trivy_scan_results.json)"  # Attach Trivy scan result to Slack message
