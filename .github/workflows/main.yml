@@ -15,7 +15,7 @@ jobs:
     steps:
       # Checkout source code
       - name: Checkout code
-        uses: actions/checkout@v3  # Update ke versi terbaru
+        uses: actions/checkout@v3  
 
       # Set up Docker
       - name: Set up Docker Buildx
@@ -23,7 +23,7 @@ jobs:
 
       # Set up Docker cache 
       - name: Cache Docker layers
-        uses: actions/cache@v3  # Update ke versi terbaru
+        uses: actions/cache@v3  
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -38,7 +38,7 @@ jobs:
 
       # Security check: Run Trivy scan on base image (Docker vulnerability scan)
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@v0.0.9  # Update ke versi terbaru
+        uses: aquasecurity/trivy-action@v0.33.0
 
       # Build Docker image with commit SHA as tag
       - name: Build Docker image
@@ -58,7 +58,7 @@ jobs:
 
       # Snyk Security scan (Scan for known vulnerabilities in dependencies)
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/docker@v3  # Update ke versi terbaru
+        uses: snyk/actions/docker@v3 
         with:
           image: ${{ github.repository }}:${{ github.sha }}
         env:
@@ -67,7 +67,7 @@ jobs:
       # Notify via Slack on Success
       - name: Notify via Slack on Success
         if: success()
-        uses: Ilshidur/action-slack@v3  # Update ke versi terbaru
+        uses: Ilshidur/action-slack@2.1.0  
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#alert-and-notification"  
@@ -76,7 +76,7 @@ jobs:
       # Notify via Slack on Failure
       - name: Notify via Slack on Failure
         if: failure()
-        uses: Ilshidur/action-slack@v3  # Update ke versi terbaru
+        uses: Ilshidur/action-slack@2.1.0  
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#alert-and-notification"  
