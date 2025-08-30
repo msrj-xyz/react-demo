@@ -39,6 +39,9 @@ jobs:
       # Security check: Run Trivy scan on base image (Docker vulnerability scan)
       - name: Scan Docker image for vulnerabilities
         uses: aquasecurity/trivy-action@0.28.0
+        with:
+            image: ${{ github.repository }}:${{ github.sha }} 
+
 
       # Build Docker image with commit SHA as tag
       - name: Build Docker image
