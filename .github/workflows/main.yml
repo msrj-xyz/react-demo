@@ -39,7 +39,9 @@ jobs:
       # Build Docker image with commit SHA as tag
       - name: Build Docker image
         run: |
-          IMAGE_TAG=${{ github.sha }} 
+          # Remove invalid characters from commit SHA (if any)
+          IMAGE_TAG=$(echo "${{ github.sha }}" | tr -cd '[:alnum:]-')
+          echo "Building Docker image with tag: $IMAGE_TAG"
           docker build -t fclone29/react-demo:$IMAGE_TAG .
 
       # Push Docker image to Docker Hub or GitHub Container Registry
@@ -51,6 +53,7 @@ jobs:
       
       - name: Push Docker image to Registry
         run: |
+          echo "Pushing image: fclone29/react-demo:$IMAGE_TAG"
           docker push fclone29/react-demo:$IMAGE_TAG
 
       # Snyk Security scan (Scan for known vulnerabilities in dependencies)
@@ -81,7 +84,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: ${{ github.sha }}"
+                    text: "*Image Tag*: $IMAGE_TAG"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -110,7 +113,7 @@ jobs:
                   - type: "mrkdwn"
                     text: "*Commit SHA*: ${{ github.sha }}"
                   - type: "mrkdwn"
-                    text: "*Image Tag*: ${{ github.sha }}"
+                    text: "*Image Tag*: $IMAGE_TAG"
               - type: "section"
                 text:
                   type: "mrkdwn"
