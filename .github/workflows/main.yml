@@ -15,7 +15,7 @@ jobs:
     steps:
       # Checkout source code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Update ke versi terbaru
 
       # Set up Docker
       - name: Set up Docker Buildx
@@ -23,7 +23,7 @@ jobs:
 
       # Set up Docker cache 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3  # Update ke versi terbaru
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -38,10 +38,8 @@ jobs:
 
       # Security check: Run Trivy scan on base image (Docker vulnerability scan)
       - name: Scan Docker image for vulnerabilities
-        uses: aquasecurity/trivy-action@v0.0.7
-        with:
-          image: ${{ github.repository }}:${{ github.sha }}
-          
+        uses: aquasecurity/trivy-action@v0.0.9  # Update ke versi terbaru
+
       # Build Docker image with commit SHA as tag
       - name: Build Docker image
         run: |
@@ -60,20 +58,16 @@ jobs:
 
       # Snyk Security scan (Scan for known vulnerabilities in dependencies)
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/docker@v1
+        uses: snyk/actions/docker@v3  # Update ke versi terbaru
         with:
           image: ${{ github.repository }}:${{ github.sha }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # Dependency update check (Dependabot)
-      - name: Check for dependency updates
-        uses: dependabot/fetch-metadata-action@v1
-
       # Notify via Slack on Success
       - name: Notify via Slack on Success
         if: success()
-        uses: Ilshidur/action-slack@v2
+        uses: Ilshidur/action-slack@v3  # Update ke versi terbaru
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#alert-and-notification"  
@@ -82,9 +76,8 @@ jobs:
       # Notify via Slack on Failure
       - name: Notify via Slack on Failure
         if: failure()
-        uses: Ilshidur/action-slack@v2
+        uses: Ilshidur/action-slack@v3  # Update ke versi terbaru
         with:
           webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
           channel: "#alert-and-notification"  
           message: "Deployment failed for commit ${{ github.sha }}"
-
