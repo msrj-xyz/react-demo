@@ -43,7 +43,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          args: test --all-projects --json > snyk_scan_results.json
+          args: test --all-projects --json > snyk_scan.json
         continue-on-error: true
 
       # Generate commit SHA for Docker image tag
@@ -79,8 +79,8 @@ jobs:
         with:
           name: scan-results
           path: |
-            snyk_scan_results.json
-            trivy_scan_results.json
+            snyk_scan.json
+            trivy_scan.json
 
       # Log in to Docker Hub
       - name: Log in to Docker Hub
@@ -130,7 +130,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat snyk_scan_results.json)"  # Attach Snyk scan result to Slack message
+                  text: "$(cat snyk_scan.json)"  # Attach Snyk scan result to Slack message
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -138,7 +138,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "$(cat trivy_scan_results.json)"  # Attach Trivy scan result to Slack message
+                  text: "$(cat trivy_scan.json)"  # Attach Trivy scan result to Slack message
 
       # Notify via Slack on Failure (with Blocks)
       - name: Notify via Slack on Failure
